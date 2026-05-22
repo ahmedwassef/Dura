@@ -27,10 +27,15 @@ class DashboardController extends Controller
                 'count' => $b->form_submissions_count,
             ]);
 
-        // Submissions by month (for chart) - SQLite compatible
+        $dbDriver = DB::connection()->getDriverName();
+        $monthExpr = $dbDriver === 'sqlite'
+            ? "strftime('%Y-%m', created_at) as month"
+            : "DATE_FORMAT(created_at, '%Y-%m') as month";
+
+        // Submissions by month (for chart) - Database agnostic
         $monthlyStats = FormSubmission::select(
             DB::raw('count(id) as count'),
-            DB::raw("strftime('%Y-%m', created_at) as month")
+            DB::raw($monthExpr)
         )
             ->groupBy('month')
             ->orderBy('month', 'desc')
