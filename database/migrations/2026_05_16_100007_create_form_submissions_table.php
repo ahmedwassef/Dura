@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('branch_id')->constrained();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->string('patient_name');
-            $table->string('id_number')->nullable();
-            $table->string('file_number')->nullable();
+            $table->string('patient_name', 125);
+            $table->string('id_number', 50)->nullable();
+            $table->string('file_number', 50)->nullable();
             $table->string('doctor_name')->nullable();
             $table->string('language', 8)->default('ar');
 
