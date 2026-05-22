@@ -1,5 +1,22 @@
 <?php
 
+if (!function_exists('mb_strimwidth')) {
+    function mb_strimwidth($string, $start, $width, $trimmarker = '', $encoding = null) {
+        $string = (string)$string;
+        $start = (int)$start;
+        $width = (int)$width;
+        $trimmarker = (string)$trimmarker;
+
+        $len = strlen($string);
+        if ($len <= $width) {
+            return $string;
+        }
+
+        $sub = substr($string, $start, $width);
+        return $sub . $trimmarker;
+    }
+}
+
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
