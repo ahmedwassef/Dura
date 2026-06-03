@@ -39,15 +39,18 @@ Route::prefix('dashboard')->middleware(['auth', 'verified', 'branch.restriction'
         Route::get('/forms/{form}', [ClinicController::class, 'form'])->name('forms.show');
 
         Route::post('/submissions', [FormSubmissionController::class, 'store'])->name('submissions.store');
+        Route::put('/submissions/{uuid}/status', [FormSubmissionController::class, 'updateStatus'])->name('submissions.status.update');
         Route::get('/submissions/{uuid}/pdf', [FormSubmissionController::class, 'pdf'])->name('submissions.pdf');
         Route::get('/signatures/{signature}', [FormSubmissionController::class, 'signatureImage'])->name('signatures.image');
         Route::get('/services/search', [FormSubmissionController::class, 'searchServices'])->name('services.search');
         Route::get('/nationalities', [PatientController::class, 'nationalities'])->name('nationalities.index');
         Route::get('/submissions/{uuid}/edit', [ClinicController::class, 'editSubmission'])->name('clinic.submissions.edit');
+        Route::get('/submissions/{uuid}', [ClinicController::class, 'showSubmission'])->name('clinic.submissions.show');
         Route::get('/patients/search', [PatientController::class, 'search'])->name('patients.search');
         Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
+        Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
 
         Route::get('/doctors/search', [DoctorController::class, 'search'])->name('doctors.search');
         Route::resource('doctors', DoctorController::class)->except(['create', 'edit', 'show']);

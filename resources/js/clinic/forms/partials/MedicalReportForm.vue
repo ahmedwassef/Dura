@@ -10,6 +10,7 @@ import { FileText, Plus, X, Lock } from 'lucide-vue-next';
 
 const props = defineProps<{
     initialData?: any;
+    readOnly?: boolean;
 }>();
 
 const { isArabic } = useClinicLocale();
@@ -196,7 +197,7 @@ defineExpose({ buildPayload });
         </div>
 
         <!-- CRM Patient/Doctor Selectors (Hidden on Print) -->
-        <div class="admin-selectors-row no-print">
+        <div class="admin-selectors-row no-print" v-if="!readOnly">
             <div class="selector-field">
                 <label class="field-label">
                     <LocalizedText :value="{ ar: 'اختر مريض مسجل (اختياري)', en: 'Select Registered Patient (Optional)' }" />
@@ -215,19 +216,19 @@ defineExpose({ buildPayload });
         <div class="medreport-info-grid">
             <div class="field">
                 <label><LocalizedText :value="{ ar: 'اسم المريض', en: 'Patient Name' }" /></label>
-                <input v-model="manualPatientName" type="text" required class="form-control" />
+                <input v-model="manualPatientName" type="text" required class="form-control" :readonly="readOnly" />
             </div>
             <div class="field">
                 <label><LocalizedText :value="{ ar: 'رقم الملف', en: 'File Number' }" /></label>
-                <input v-model="fileNumber" type="text" class="form-control" />
+                <input v-model="fileNumber" type="text" class="form-control" :readonly="readOnly" />
             </div>
             <div class="field">
                 <label><LocalizedText :value="{ ar: 'رقم الهوية', en: 'National ID' }" /></label>
-                <input v-model="idNumber" type="text" class="form-control" inputmode="numeric" />
+                <input v-model="idNumber" type="text" class="form-control" inputmode="numeric" :readonly="readOnly" />
             </div>
             <div class="field">
                 <label><LocalizedText :value="{ ar: 'التاريخ', en: 'Date' }" /></label>
-                <input v-model="reportDate" type="date" class="form-control" />
+                <input v-model="reportDate" type="date" class="form-control" :readonly="readOnly" />
             </div>
         </div>
 
@@ -240,6 +241,7 @@ defineExpose({ buildPayload });
             v-model="reportBody"
             class="medreport-body"
             required
+            :readonly="readOnly"
             :placeholder="isArabic ? 'اكتب التقرير هنا...' : 'Write the report here...'"
         ></textarea>
 
@@ -251,11 +253,13 @@ defineExpose({ buildPayload });
                     v-model="doctorSignature"
                     :label="{ ar: 'توقيع الطبيب', en: 'Doctor\'s Signature' }"
                     :placeholder="isArabic ? 'وقع هنا' : 'Sign here'"
+                    :disabled="readOnly"
                 />
                 <input
                     v-model="doctorNameInput"
                     type="text"
                     class="doctor-name-input"
+                    :readonly="readOnly"
                     :placeholder="isArabic ? 'اسم الطبيب (اختياري)' : 'Doctor Name (Optional)'"
                 />
             </div>
@@ -267,10 +271,14 @@ defineExpose({ buildPayload });
                 </div>
                 
                 <div 
-                    class="stamp-zone cursor-pointer" 
-                    @click="triggerFileInput(doctorStampInput)"
+                    class="stamp-zone" 
+                    :class="{ 'cursor-pointer': !readOnly }"
+                    @click="readOnly ? null : triggerFileInput(doctorStampInput)"
                 >
                     <img v-if="doctorStamp" :src="doctorStamp" alt="Doctor Stamp" />
+                    <template v-else-if="readOnly">
+                        <span class="opacity-40 text-xs">-</span>
+                    </template>
                     <template v-else>
                         <Plus class="size-5 opacity-50" />
                         <span class="upload-hint">
@@ -287,7 +295,7 @@ defineExpose({ buildPayload });
                     @change="handleStampUpload($event, 'doctor')" 
                 />
                 
-                <div class="sign-actions" v-if="doctorStamp">
+                <div class="sign-actions" v-if="doctorStamp && !readOnly">
                     <button type="button" class="sign-mini-btn delete" @click="clearStamp('doctor')">
                         <LocalizedText :value="{ ar: 'مسح', en: 'Clear' }" />
                     </button>
@@ -302,10 +310,13 @@ defineExpose({ buildPayload });
 
                 <div 
                     class="stamp-zone"
-                    :class="{ 'locked': !isAdmin && !complexStamp, 'cursor-pointer': isAdmin }"
-                    @click="isAdmin ? triggerFileInput(complexStampInput) : null"
+                    :class="{ 'locked': !isAdmin && !complexStamp && !readOnly, 'cursor-pointer': isAdmin && !readOnly }"
+                    @click="isAdmin && !readOnly ? triggerFileInput(complexStampInput) : null"
                 >
                     <img v-if="complexStamp" :src="complexStamp" alt="Complex Stamp" />
+                    <template v-else-if="!complexStamp && readOnly">
+                        <span class="opacity-40 text-xs">-</span>
+                    </template>
                     <template v-else-if="!isAdmin">
                         <Lock class="lock-icon" />
                         <span class="lock-text">
@@ -328,7 +339,7 @@ defineExpose({ buildPayload });
                     @change="handleStampUpload($event, 'complex')" 
                 />
 
-                <div class="sign-actions" v-if="complexStamp">
+                <div class="sign-actions" v-if="complexStamp && !readOnly">
                     <button type="button" class="sign-mini-btn delete" @click="clearStamp('complex')">
                         <LocalizedText :value="{ ar: 'مسح', en: 'Clear' }" />
                     </button>

@@ -81,4 +81,26 @@ class FormSubmissionController extends Controller
             ]),
         ]);
     }
+
+    public function updateStatus(string $uuid, Request $request)
+    {
+        $submission = $this->formSubmissionService->findByUuid($uuid);
+        abort_unless($submission, 404);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:completed,pending,pending_admin,pending_discount_review'],
+        ]);
+
+        $submission->status = \App\Enums\FormSubmissionStatus::from($validated['status']);
+        $submission->save();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Status updated successfully.',
+                'submission' => FormSubmissionPresenter::forArchive($submission),
+            ]);
+        }
+
+        return back();
+    }
 }

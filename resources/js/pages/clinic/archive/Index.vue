@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import ArchiveCard from '@/clinic/components/archive/ArchiveCard.vue';
 import ClinicHeader from '@/clinic/components/layout/ClinicHeader.vue';
 import LocalizedText from '@/clinic/components/ui/LocalizedText.vue';
+import { useClinicLocale } from '@/clinic/composables/useClinicLocale';
 
 const props = defineProps<{
     archive: Array<Record<string, unknown>>;
@@ -13,9 +14,12 @@ const props = defineProps<{
     };
 }>();
 
+const { isArabic } = useClinicLocale();
+
 const search = ref('');
 const branchId = ref('');
 const formId = ref('');
+const status = ref('');
 
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -25,7 +29,8 @@ const fetchArchive = () => {
         { 
             search: search.value || undefined,
             branch_id: branchId.value || undefined,
-            form_id: formId.value || undefined
+            form_id: formId.value || undefined,
+            status: status.value || undefined
         },
         { preserveState: true, replace: true },
     );
@@ -36,7 +41,7 @@ watch(search, (value) => {
     searchTimer = setTimeout(fetchArchive, 300);
 });
 
-watch([branchId, formId], fetchArchive);
+watch([branchId, formId, status], fetchArchive);
 </script>
 
 <template>
@@ -79,6 +84,14 @@ watch([branchId, formId], fetchArchive);
                         <option v-for="f in filters.forms" :key="f.id" :value="f.id">
                             {{ f.name_ar }} / {{ f.name_en }}
                         </option>
+                    </select>
+
+                    <select v-model="status" class="filter-select">
+                        <option value="">{{ isArabic ? 'كل الحالات' : 'All Statuses' }}</option>
+                        <option value="pending">{{ isArabic ? 'معلق / مسودة' : 'Pending / Draft' }}</option>
+                        <option value="pending_admin">{{ isArabic ? 'بانتظار الإدارة' : 'Pending Admin' }}</option>
+                        <option value="pending_discount_review">{{ isArabic ? 'مراجعة الخصم' : 'Discount Review' }}</option>
+                        <option value="completed">{{ isArabic ? 'مكتمل' : 'Completed' }}</option>
                     </select>
                 </div>
 

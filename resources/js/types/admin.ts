@@ -77,7 +77,7 @@ export interface FormTemplate {
 export interface FormField {
     id: number;
     form_template_id: number;
-    type: 'section' | 'text' | 'textarea' | 'number' | 'date' | 'select' | 'radio' | 'checkbox' | 'consent' | 'signature';
+    type: 'section' | 'text' | 'textarea' | 'number' | 'date' | 'select' | 'radio' | 'checkbox' | 'consent' | 'signature' | 'note' | 'instruction' | 'faq';
     key: string | null;
     label_ar: string | null;
     label_en: string | null;
@@ -85,7 +85,7 @@ export interface FormField {
     placeholder_en: string | null;
     content_ar: string | null;
     content_en: string | null;
-    options: Array<{ value: string; label_ar: string; label_en: string }> | null;
+    options: Array<{ value?: string; label_ar: string; label_en: string; content_ar?: string; content_en?: string }> | null;
     settings: {
         width?: string; // 'full' | 'half' | 'third'
         rows?: number;

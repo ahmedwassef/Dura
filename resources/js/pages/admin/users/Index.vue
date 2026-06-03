@@ -158,7 +158,7 @@ watch([search, branchId, departmentId, status], () => {
                             </td>
                             <td>
                                 <span
-                                    v-if="user.email_verified_at"
+                                    v-if="user.status === 'active'"
                                     style="color: var(--green); font-weight: 700"
                                 >
                                     {{ isArabic ? 'نشط' : 'Active' }}

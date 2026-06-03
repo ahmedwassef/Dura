@@ -35,7 +35,7 @@ class PatientController extends Controller
 
     public function show(Patient $patient): Response
     {
-        $patient->load(['branch', 'formSubmissions.user', 'formSubmissions.template']);
+        $patient->load(['branch', 'formSubmissions.user', 'formSubmissions.template', 'nationality']);
 
         return Inertia::render('clinic/patients/Show', [
             'patient' => $patient,
@@ -85,6 +85,29 @@ class PatientController extends Controller
             'message' => 'Patient created successfully',
             'patient' => $patient
         ], 201);
+    }
+
+    public function update(Request $request, Patient $patient): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'id_number' => 'nullable|string|max:20',
+            'file_number' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20',
+            'nationality_id' => 'nullable|exists:nationalities,id',
+            'date_of_birth' => 'nullable|date',
+            'sex' => 'nullable|string|in:male,female',
+            'address' => 'nullable|string',
+        ]);
+
+        $patient->recordChange($patient->getOriginal(), $validated, $request->user());
+        
+        $patient->update($validated);
+
+        return response()->json([
+            'message' => 'Patient updated successfully',
+            'patient' => $patient->load(['branch', 'nationality'])
+        ]);
     }
 
     public function nationalities(): JsonResponse

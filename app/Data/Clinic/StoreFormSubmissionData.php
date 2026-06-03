@@ -35,6 +35,7 @@ readonly class StoreFormSubmissionData
         public string $extraDiscountType = 'amount',
         public ?array $specialtyBreakdown = null,
         public array $signatures = [],
+        public ?string $status = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -62,6 +63,7 @@ readonly class StoreFormSubmissionData
             extraDiscountType: $data['extra_discount_type'] ?? 'amount',
             specialtyBreakdown: $data['specialty_breakdown'] ?? null,
             signatures: $data['signatures'] ?? [],
+            status: $data['status'] ?? null,
         );
     }
 }

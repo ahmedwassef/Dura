@@ -21,9 +21,9 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
             ->first();
     }
 
-    public function getArchiveSubmissions(?int $branchId = null, ?string $search = null, ?int $formTemplateId = null, int $limit = 100): Collection
+    public function getArchiveSubmissions(?int $branchId = null, ?string $search = null, ?int $formTemplateId = null, ?string $status = null, int $limit = 100): Collection
     {
-        return $this->baseQuery($branchId, $search, $formTemplateId)
+        return $this->baseQuery($branchId, $search, $formTemplateId, $status)
             ->limit($limit)
             ->get();
     }
@@ -36,7 +36,7 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
             ->get();
     }
 
-    protected function baseQuery(?int $branchId, ?string $search, ?int $formTemplateId = null)
+    protected function baseQuery(?int $branchId, ?string $search, ?int $formTemplateId = null, ?string $status = null)
     {
         $query = FormSubmission::query()
             ->with(['template', 'branch', 'media'])
@@ -58,6 +58,10 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
         
         if ($formTemplateId) {
             $query->where('form_template_id', $formTemplateId);
+        }
+
+        if ($status) {
+            $query->where('status', $status);
         }
 
         return $query;

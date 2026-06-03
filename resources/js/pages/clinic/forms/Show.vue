@@ -24,7 +24,7 @@ const props = defineProps<{
 }>();
 
 const { isArabic } = useClinicLocale();
-const { branch } = useClinicSession();
+const { branch, role } = useClinicSession();
 const { saving, save } = useFormSubmission();
 const formRef = ref<{ buildPayload?: () => Record<string, unknown> } | null>(null);
 
@@ -72,7 +72,7 @@ const backHref = computed(() => {
     return parent?.href || '/dashboard/clinic/home';
 });
 
-async function saveForm(): Promise<void> {
+async function saveForm(targetStatus?: string): Promise<void> {
     if (! branch.value) {
         router.visit('/dashboard/clinic');
         return;
@@ -86,6 +86,27 @@ async function saveForm(): Promise<void> {
         grand_total: 0,
         is_signed: false,
     };
+
+    let customSuccessMsg = undefined;
+    if (props.form === 'medreport') {
+        const resolvedStatus = targetStatus || (role.value === 'admin' ? 'completed' : 'pending_admin');
+        if (resolvedStatus === 'completed') {
+            customSuccessMsg = {
+                ar: 'تم اعتماد التقرير الطبي وحفظه بنجاح',
+                en: 'Medical report approved and completed'
+            };
+        } else if (resolvedStatus === 'pending') {
+            customSuccessMsg = {
+                ar: 'تم حفظ التقرير الطبي كمسودة بنجاح',
+                en: 'Medical report saved as pending successfully'
+            };
+        } else if (resolvedStatus === 'pending_admin') {
+            customSuccessMsg = {
+                ar: 'تم إرسال التقرير الطبي للإدارة للاعتماد',
+                en: 'Medical report forwarded to Administration'
+            };
+        }
+    }
 
     const ok = await save({
         uuid: props.initialSubmission?.uuid || null,
@@ -107,7 +128,8 @@ async function saveForm(): Promise<void> {
         plan_teeth: (partial.plan_teeth as Array<number | string>) ?? [],
         age_mode: (partial.age_mode as string) ?? null,
         signatures: (partial.signatures as Array<Record<string, unknown>>) ?? [],
-    });
+        status: targetStatus || null,
+    }, customSuccessMsg);
 
     if (ok) {
         router.visit('/dashboard/clinic/archive');
@@ -244,22 +266,64 @@ async function previewPdf(): Promise<void> {
                     {{ isArabic ? 'تنزيل PDF' : 'Download PDF' }}
                 </button>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    :disabled="saving"
-                    @click="saveForm"
-                >
-                    {{
-                        saving
-                            ? isArabic
-                                ? 'جاري الحفظ...'
-                                : 'Saving...'
-                            : isArabic
-                              ? 'حفظ وإرسال للأرشيف'
-                              : 'Save & send to archive'
-                    }}
-                </button>
+                <template v-if="props.form === 'medreport' && role !== 'admin'">
+                    <!-- Save Draft Button -->
+                    <button
+                        type="button"
+                        class="btn btn-outline"
+                        :disabled="saving"
+                        @click="saveForm('pending')"
+                    >
+                        {{
+                            saving
+                                ? (isArabic ? 'جاري الحفظ...' : 'Saving...')
+                                : (isArabic ? 'حفظ مسودة' : 'Save Draft')
+                        }}
+                    </button>
+                    <!-- Send to Team Button -->
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        :disabled="saving"
+                        @click="saveForm('pending_admin')"
+                    >
+                        {{
+                            saving
+                                ? (isArabic ? 'جاري الإرسال...' : 'Forwarding...')
+                                : (isArabic ? 'إرسال للفريق' : 'Send to Team')
+                        }}
+                    </button>
+                </template>
+                <template v-else-if="props.form === 'medreport' && role === 'admin'">
+                    <!-- Approve & Stamp Button -->
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        :disabled="saving"
+                        @click="saveForm('completed')"
+                    >
+                        {{
+                            saving
+                                ? (isArabic ? 'جاري الاعتماد...' : 'Approving...')
+                                : (isArabic ? 'اعتماد وتطبيق الختم' : 'Approve & Apply Stamp')
+                        }}
+                    </button>
+                </template>
+                <template v-else>
+                    <!-- Standard Save Button -->
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        :disabled="saving"
+                        @click="saveForm()"
+                    >
+                        {{
+                            saving
+                                ? (isArabic ? 'جاري الحفظ...' : 'Saving...')
+                                : (isArabic ? 'حفظ وإرسال للأرشيف' : 'Save & send to archive')
+                        }}
+                    </button>
+                </template>
                 <Link :href="backHref" class="btn btn-outline">
                     {{ isArabic ? 'رجوع' : 'Back' }}
                 </Link>

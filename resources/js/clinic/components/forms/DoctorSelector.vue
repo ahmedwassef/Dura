@@ -3,10 +3,11 @@ import { ref, watch } from 'vue';
 import axios from 'axios';
 import LocalizedText from '@/clinic/components/ui/LocalizedText.vue';
 import { useClinicLocale } from '@/clinic/composables/useClinicLocale';
-import { Search, UserPlus, X, User } from 'lucide-vue-next';
+import { Search, UserPlus, X, User, Check } from 'lucide-vue-next';
 
 const props = defineProps<{
     modelValue?: any;
+    readOnly?: boolean;
 }>();
 
 const emit = defineEmits(['update:modelValue', 'select']);
@@ -84,7 +85,7 @@ watch(() => props.modelValue, (newVal) => {
 
 <template>
     <div class="doctor-selector">
-        <div class="field relative">
+        <div class="field relative" v-if="!readOnly">
             <label><LocalizedText :value="{ ar: 'اسم الطبيب', en: 'Doctor Name' }" /></label>
             <div class="search-input-wrap">
                 <input 
@@ -131,6 +132,13 @@ watch(() => props.modelValue, (newVal) => {
         </div>
 
         <div class="doctor-details-grid" v-if="selectedDoctor">
+            <div class="doctor-detail-card" v-if="readOnly" style="grid-column: span 2;">
+                <div class="card-label"><LocalizedText :value="{ ar: 'اسم الطبيب', en: 'Doctor Name' }" /></div>
+                <div class="card-value">
+                    <User class="size-3.5 mr-1 text-primary" />
+                    {{ selectedDoctor.name || '—' }}
+                </div>
+            </div>
             <div class="doctor-detail-card">
                 <div class="card-label"><LocalizedText :value="{ ar: 'التخصص', en: 'Specialty' }" /></div>
                 <div class="card-value">

@@ -11,7 +11,7 @@ interface FormSubmissionRepositoryInterface
 
     public function findByUuid(string $uuid): ?FormSubmission;
 
-    public function getArchiveSubmissions(?int $branchId = null, ?string $search = null, ?int $formTemplateId = null, int $limit = 100): Collection;
+    public function getArchiveSubmissions(?int $branchId = null, ?string $search = null, ?int $formTemplateId = null, ?string $status = null, int $limit = 100): Collection;
 
     public function getAdminSubmissions(?int $branchId = null, ?string $search = null, ?int $formTemplateId = null, int $limit = 100): Collection;
 }

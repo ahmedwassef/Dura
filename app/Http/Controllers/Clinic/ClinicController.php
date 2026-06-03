@@ -101,7 +101,8 @@ class ClinicController extends Controller
         return Inertia::render('clinic/archive/Index', $this->clinicService->getArchiveData(
             $request->string('search')->toString() ?: null,
             $request->input('branch_id'),
-            $request->input('form_id')
+            $request->input('form_id'),
+            $request->input('status')
         ));
     }
 
@@ -136,6 +137,17 @@ class ClinicController extends Controller
         $submission = $this->clinicService->getSubmissionForEdit($uuid);
 
         return Inertia::render('clinic/forms/Show', [
+            'form' => $submission['template']['code'],
+            'template' => $submission['template'],
+            'initialSubmission' => $submission['data'],
+        ]);
+    }
+
+    public function showSubmission(string $uuid): Response
+    {
+        $submission = $this->clinicService->getSubmissionForEdit($uuid);
+
+        return Inertia::render('clinic/forms/Details', [
             'form' => $submission['template']['code'],
             'template' => $submission['template'],
             'initialSubmission' => $submission['data'],

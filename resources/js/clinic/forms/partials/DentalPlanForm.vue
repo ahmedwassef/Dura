@@ -12,6 +12,7 @@ const { isArabic } = useClinicLocale();
 
 const props = defineProps<{
     initialData?: any;
+    readOnly?: boolean;
 }>();
 
 const serviceSearchResults = ref<any[]>([]);
@@ -330,6 +331,7 @@ const upperTeeth = computed(() => ageMode.value === 'child' ? CHILD_UPPER : ADUL
 const lowerTeeth = computed(() => ageMode.value === 'child' ? CHILD_LOWER : ADULT_LOWER);
 
 function selectTooth(num: number) {
+    if (props.readOnly) return;
     if (chartMode.value === 'current') {
         selectedTooth.value = num;
     } else {
@@ -437,8 +439,8 @@ defineExpose({ buildPayload });
 <template>
     <FormSection number="١" :title="{ ar: 'بيانات الحالة', en: 'Case Information' }">
         <div class="case-info-grid">
-            <PatientSelector v-model="selectedPatient" />
-            <DoctorSelector v-model="selectedDoctor" />
+            <PatientSelector v-model="selectedPatient" :read-only="readOnly" />
+            <DoctorSelector v-model="selectedDoctor" :read-only="readOnly" />
         </div>
     </FormSection>
 
@@ -496,7 +498,7 @@ defineExpose({ buildPayload });
             </div>
 
             <!-- Side panel -->
-            <aside class="teeth-side-panel" v-if="chartMode === 'current'">
+            <aside class="teeth-side-panel" v-if="chartMode === 'current' && !readOnly">
                 <div class="tsp-header">
                     <span style="font-size: 14px; font-weight: bold; color: var(--primary);">
                         <LocalizedText :value="{ ar: 'اختر حالة السن', en: 'Select tooth state' }" />
@@ -524,7 +526,7 @@ defineExpose({ buildPayload });
     </FormSection>
 
     <FormSection number="٣" :title="{ ar: 'الخدمات المطلوبة', en: 'Requested Services' }" :disabled="!selectedPatient">
-        <div class="services-search" style="position:relative;">
+        <div class="services-search" style="position:relative;" v-if="!readOnly">
             <input v-model="serviceSearch" @focus="showSearchResults = true" type="text" :placeholder="isArabic ? 'ابحث بالاسم أو الكود...' : 'Search by name or code...'" />
             <div class="search-results" :class="{ active: showSearchResults && filteredCatalog.length > 0 }">
                 <div v-for="item in filteredCatalog" :key="item.code" class="search-result-item" @click="addService(item)">
@@ -563,7 +565,7 @@ defineExpose({ buildPayload });
                         <th><LocalizedText :value="{ ar: 'الكمية', en: 'Qty' }" /></th>
                         <th><LocalizedText :value="{ ar: 'خصم', en: 'Discount' }" /></th>
                         <th><LocalizedText :value="{ ar: 'الصافي', en: 'Net' }" /></th>
-                        <th></th>
+                        <th v-if="!readOnly"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -571,20 +573,28 @@ defineExpose({ buildPayload });
                         <td style="font-weight:600; color:var(--primary);">{{ isArabic ? s.name_ar : s.name_en }}</td>
                         <td><span class="row-tooth">{{ s.tooth }}</span></td>
                         <td>{{ s.price }}</td>
-                        <td><input type="number" v-model="s.quantity" min="1" style="width: 60px;" /></td>
+                        <td>
+                            <span v-if="readOnly" style="font-weight: 600;">{{ s.quantity }}</span>
+                            <input v-else type="number" v-model="s.quantity" min="1" style="width: 60px;" />
+                        </td>
                         <td>
                             <div class="discount-cell">
-                                <input type="number" v-model="s.discount" style="width:60px;" />
-                                <select v-model="s.discountType">
-                                    <option value="amount">{{ isArabic ? 'ر.س' : 'SAR' }}</option>
-                                    <option value="percent">%</option>
-                                </select>
+                                <span v-if="readOnly" class="readonly-discount-val">
+                                    {{ s.discount || 0 }} {{ s.discountType === 'percent' ? '%' : (isArabic ? 'ر.س' : 'SAR') }}
+                                </span>
+                                <template v-else>
+                                    <input type="number" v-model="s.discount" style="width:60px;" />
+                                    <select v-model="s.discountType">
+                                        <option value="amount">{{ isArabic ? 'ر.س' : 'SAR' }}</option>
+                                        <option value="percent">%</option>
+                                    </select>
+                                </template>
                             </div>
                         </td>
                         <td class="net-price">
                             {{ ((Number(s.price || 0) * Number(s.quantity || 0)) - (s.discountType === 'percent' ? (Number(s.price || 0) * Number(s.quantity || 0) * (Number(s.discount || 0) / 100)) : Number(s.discount || 0))).toFixed(2) }}
                         </td>
-                        <td>
+                        <td v-if="!readOnly">
                             <button type="button" class="remove-btn" @click="removeService(s.id)">✕</button>
                         </td>
                     </tr>
@@ -596,11 +606,16 @@ defineExpose({ buildPayload });
     <FormSection number="٤" :title="{ ar: 'الحسابات النهائية', en: 'Final Calculations' }" :disabled="!selectedPatient">
         <div class="extra-discount">
             <label><LocalizedText :value="{ ar: 'خصم إضافي على الإجمالي:', en: 'Extra discount on total:' }" /></label>
-            <input type="number" v-model="extraDiscount" placeholder="0" />
-            <select v-model="extraDiscountType">
-                <option value="amount">{{ isArabic ? 'ر.س' : 'SAR' }}</option>
-                <option value="percent">%</option>
-            </select>
+            <span v-if="readOnly" class="readonly-discount-val">
+                {{ extraDiscount || 0 }} {{ extraDiscountType === 'percent' ? '%' : (isArabic ? 'ر.س' : 'SAR') }}
+            </span>
+            <template v-else>
+                <input type="number" v-model="extraDiscount" placeholder="0" />
+                <select v-model="extraDiscountType">
+                    <option value="amount">{{ isArabic ? 'ر.س' : 'SAR' }}</option>
+                    <option value="percent">%</option>
+                </select>
+            </template>
         </div>
 
         <div class="totals-grid">
@@ -642,12 +657,12 @@ defineExpose({ buildPayload });
             <SignaturePad 
                 v-model="patientSignature" 
                 :label="{ ar: 'توقيع المريض', en: 'Patient Signature' }" 
-              
+                :disabled="readOnly"
             />
             <SignaturePad 
                 v-model="doctorSignature" 
                 :label="{ ar: 'توقيع الطبيب', en: 'Doctor Signature' }" 
-                
+                :disabled="readOnly"
             />
         </div>
 

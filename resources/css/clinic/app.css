@@ -40,6 +40,7 @@ html.pdf-mode .form-container * {
     text-decoration-color: currentColor !important;
     border-color: #d8dee9 !important; /* var(--line) */
     box-shadow: none !important;
+    letter-spacing: normal !important;
 }
 
 .pdf-mode .text-primary { color: #1e3a5f !important; }
@@ -56,6 +57,24 @@ html.pdf-mode .form-container * {
 .pdf-mode [class*="text-"] { text-shadow: none !important; }
 
 .pdf-mode { background: white !important; }
+
+/* html2canvas RTL/BiDi layouts & Arabic text/numbers rendering fix */
+.pdf-mode .details-grid,
+.pdf-mode .detail-card,
+.pdf-mode .doctor-details-grid,
+.pdf-mode .doctor-detail-card {
+    direction: ltr !important;
+    text-align: right !important;
+}
+.pdf-mode .card-value,
+.pdf-mode .doctor-detail-card .card-value {
+    direction: ltr !important;
+    text-align: right !important;
+    display: inline-flex !important;
+}
+.pdf-mode .card-label {
+    text-align: right !important;
+}
 
 * {
   box-sizing: border-box;
@@ -4839,6 +4858,85 @@ body[data-lang="ar"] .terms-list li {
   padding: 14px;
   border-radius: 12px;
   border: 1px solid var(--line);
+}
+
+.readonly-discount-val {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 13.5px;
+}
+.extra-discount .readonly-discount-val {
+  font-size: 15px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: bold;
+}
+
+/* FAQ block styling */
+.renderer-faq-block {
+  margin-top: 15px;
+  width: 100%;
+}
+.faq-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq-item {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+.faq-question {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body[data-lang="ar"] .faq-question::before {
+  content: "س";
+  background: var(--accent);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+body[data-lang="en"] .faq-question::before {
+  content: "Q";
+  background: var(--accent);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.faq-answer {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.6;
+  padding-inline-start: 28px;
 }
 
 /* ============ PRINT ============ */

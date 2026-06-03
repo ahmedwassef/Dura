@@ -101,8 +101,12 @@ class FormSubmissionService
 
     protected function resolveStatus(StoreFormSubmissionData $data): FormSubmissionStatus
     {
-        if ($data->formCode === 'medreport' && ($data->payload['needs_admin_stamp'] ?? false)) {
-            return FormSubmissionStatus::PendingAdmin;
+        if ($data->status) {
+            return FormSubmissionStatus::from($data->status);
+        }
+
+        if ($data->formCode === 'medreport') {
+            return FormSubmissionStatus::Pending;
         }
 
         if ($data->formCode === 'dental' && $data->extraDiscount > 0) {

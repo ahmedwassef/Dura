@@ -3,10 +3,11 @@ import { ref, watch, onMounted, computed } from 'vue';
 import axios from 'axios';
 import LocalizedText from '@/clinic/components/ui/LocalizedText.vue';
 import { useClinicLocale } from '@/clinic/composables/useClinicLocale';
-import { Search, UserPlus, X, Calendar, Globe, Phone, FileText } from 'lucide-vue-next';
+import { Search, UserPlus, X, Calendar, Globe, Phone, FileText, User } from 'lucide-vue-next';
 
 const props = defineProps<{
     modelValue?: any;
+    readOnly?: boolean;
 }>();
 
 const emit = defineEmits(['update:modelValue', 'select']);
@@ -121,7 +122,7 @@ watch(() => props.modelValue, (newVal) => {
 
 <template>
     <div class="patient-selector">
-        <div class="selection-grid">
+        <div class="selection-grid" v-if="!readOnly">
             <!-- Patient Name Search/Dropdown -->
             <div class="field relative search-field">
                 <label><LocalizedText :value="{ ar: 'بحث عن مريض', en: 'Search Patient' }" /></label>
@@ -171,6 +172,13 @@ watch(() => props.modelValue, (newVal) => {
         </div>
 
         <div class="details-grid" v-if="selectedPatient">
+            <div class="detail-card" v-if="readOnly" style="grid-column: span 2;">
+                <div class="card-label"><LocalizedText :value="{ ar: 'اسم المريض', en: 'Patient Name' }" /></div>
+                <div class="card-value">
+                    <User class="size-3.5 mr-1 text-primary" />
+                    {{ selectedPatient.name || '—' }}
+                </div>
+            </div>
             <div class="detail-card">
                 <div class="card-label"><LocalizedText :value="{ ar: 'رقم الملف', en: 'File No.' }" /></div>
                 <div class="card-value">

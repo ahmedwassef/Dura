@@ -26,6 +26,7 @@ export type SubmissionPayload = {
     extra_discount_type?: string;
     specialty_breakdown?: Record<string, unknown> | null;
     signatures?: Array<{ role: string; signer_name?: string; image?: string }>;
+    status?: string | null;
 };
 
 export function useFormSubmission() {
@@ -34,7 +35,10 @@ export function useFormSubmission() {
     const { toast } = useClinicToast();
     const saving = ref(false);
 
-    async function save(payload: SubmissionPayload): Promise<boolean> {
+    async function save(
+        payload: SubmissionPayload,
+        successMessage?: { ar: string; en: string },
+    ): Promise<boolean> {
         if (! branch.value) {
             toast(
                 isArabic.value
@@ -71,12 +75,11 @@ export function useFormSubmission() {
                 throw new Error('Save failed');
             }
 
-            toast(
-                isArabic.value
-                    ? 'تم حفظ النموذج في الأرشيف'
-                    : 'Form saved to archive',
-                'success',
-            );
+            const msg = successMessage
+                ? (isArabic.value ? successMessage.ar : successMessage.en)
+                : (isArabic.value ? 'تم حفظ النموذج في الأرشيف' : 'Form saved to archive');
+
+            toast(msg, 'success');
 
             return true;
         } catch {

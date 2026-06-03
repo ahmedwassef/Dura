@@ -18,6 +18,7 @@ class StoreFormSubmissionRequest extends FormRequest
             'uuid' => ['nullable', 'string', 'uuid'],
             'form_code' => ['required', 'string', 'max:64'],
             'branch_code' => ['required', 'string', 'max:32'],
+            'status' => ['nullable', 'string', 'in:completed,pending,pending_admin,pending_discount_review'],
             'patient_name' => ['required', 'string', 'max:255'],
             'id_number' => ['nullable', 'string', 'max:64'],
             'file_number' => ['nullable', 'string', 'max:64'],

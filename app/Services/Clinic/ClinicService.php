@@ -57,7 +57,7 @@ class ClinicService
      *
      * @return array
      */
-    public function getArchiveData(?string $search = null, ?int $filterBranchId = null, ?int $formTemplateId = null): array
+    public function getArchiveData(?string $search = null, ?int $filterBranchId = null, ?int $formTemplateId = null, ?string $status = null): array
     {
         // For standard clinic users, we might restrict by session branch
         // But for admin/archive view, we allow cross-branch if filter is provided
@@ -67,7 +67,7 @@ class ClinicService
 
         return [
             'archive' => FormSubmissionPresenter::collectionForArchive(
-                $this->formSubmissionRepository->getArchiveSubmissions($finalBranchId, $search, $formTemplateId),
+                $this->formSubmissionRepository->getArchiveSubmissions($finalBranchId, $search, $formTemplateId, $status),
             ),
             'filters' => [
                 'branches' => $this->branchRepository->getActiveBranches(),

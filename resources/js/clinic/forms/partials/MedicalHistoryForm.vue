@@ -11,6 +11,7 @@ const { isArabic } = useClinicLocale();
 
 const props = defineProps<{
     initialData?: any;
+    readOnly?: boolean;
 }>();
 
 // State
@@ -137,8 +138,8 @@ const DISEASE_OPTIONS = [
         <!-- ١. بيانات المريض -->
         <FormSection number="١" :title="{ ar: 'بيانات المريض', en: 'Patient Information' }">
             <div class="case-info-grid">
-                <PatientSelector v-model="selectedPatient" />
-                <DoctorSelector v-model="selectedDoctor" />
+                <PatientSelector v-model="selectedPatient" :read-only="readOnly" />
+                <DoctorSelector v-model="selectedDoctor" :read-only="readOnly" />
             </div>
         </FormSection>
 
@@ -149,7 +150,7 @@ const DISEASE_OPTIONS = [
             </p>
             <div class="checklist-grid">
                 <label v-for="opt in DISEASE_OPTIONS" :key="opt.en" class="check-item">
-                    <input type="checkbox" :value="opt.ar" v-model="diseases" />
+                    <input type="checkbox" :value="opt.ar" v-model="diseases" :disabled="readOnly" />
                     <span><LocalizedText :value="opt" /></span>
                 </label>
             </div>
@@ -160,23 +161,23 @@ const DISEASE_OPTIONS = [
             <div class="detailed-questions">
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'هل سبق أن دخلت المستشفى؟ ولماذا؟', en: 'Have you been hospitalized? Why?' }" /></label>
-                    <textarea v-model="detailQuestions.hospitalized"></textarea>
+                    <textarea v-model="detailQuestions.hospitalized" :readonly="readOnly"></textarea>
                 </div>
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'بعد حدوث جرح، هل تنزف طويلاً؟ كم دقيقة يستمر النزيف؟', en: 'Do you bleed long after injury? How many minutes?' }" /></label>
-                    <textarea v-model="detailQuestions.bleeding"></textarea>
+                    <textarea v-model="detailQuestions.bleeding" :readonly="readOnly"></textarea>
                 </div>
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'هل تتعاطى أي علاج الآن؟ ما هو؟', en: 'Are you currently taking any medication?' }" /></label>
-                    <textarea v-model="detailQuestions.medication"></textarea>
+                    <textarea v-model="detailQuestions.medication" :readonly="readOnly"></textarea>
                 </div>
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'هل لديك حساسية ضد البنسلين أو أي دواء آخر؟', en: 'Are you allergic to penicillin or any other drug?' }" /></label>
-                    <textarea v-model="detailQuestions.allergies"></textarea>
+                    <textarea v-model="detailQuestions.allergies" :readonly="readOnly"></textarea>
                 </div>
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'هل لديك أي مشكلة أخرى؟', en: 'Do you have any other condition?' }" /></label>
-                    <textarea v-model="detailQuestions.other"></textarea>
+                    <textarea v-model="detailQuestions.other" :readonly="readOnly"></textarea>
                 </div>
             </div>
         </FormSection>
@@ -185,21 +186,21 @@ const DISEASE_OPTIONS = [
         <FormSection v-if="isFemale" number="٤" :title="{ ar: 'للنساء فقط', en: 'For Women Only' }">
             <div class="checklist-grid">
                 <label class="check-item">
-                    <input type="checkbox" v-model="womenOnly.pregnant" />
+                    <input type="checkbox" v-model="womenOnly.pregnant" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل أنت حامل؟', en: 'Are you pregnant?' }" /></span>
                 </label>
                 <label class="check-item">
-                    <input type="checkbox" v-model="womenOnly.miscarriage" />
+                    <input type="checkbox" v-model="womenOnly.miscarriage" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل حصل إجهاض أو مشكلة؟', en: 'Any miscarriage or issue?' }" /></span>
                 </label>
                 <label class="check-item">
-                    <input type="checkbox" v-model="womenOnly.contraceptive" />
+                    <input type="checkbox" v-model="womenOnly.contraceptive" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل تتعاطين حبوب منع الحمل أو هرمونات؟', en: 'Taking contraceptives or hormones?' }" /></span>
                 </label>
             </div>
             <div class="field mt-4">
                 <label><LocalizedText :value="{ ar: 'ملاحظات إضافية', en: 'Additional Notes' }" /></label>
-                <textarea v-model="womenOnly.notes"></textarea>
+                <textarea v-model="womenOnly.notes" :readonly="readOnly"></textarea>
             </div>
         </FormSection>
 
@@ -207,33 +208,33 @@ const DISEASE_OPTIONS = [
         <FormSection number="٥" :title="{ ar: 'أسئلة خاصة بالأسنان', en: 'Dental Questions' }">
             <div class="field">
                 <label><LocalizedText :value="{ ar: 'ما هو الغرض الأساسي من الزيارة؟', en: 'Main purpose of visit?' }" /></label>
-                <input type="text" v-model="dentalQuestions.purpose" class="admin-input" />
+                <input type="text" v-model="dentalQuestions.purpose" class="admin-input" :readonly="readOnly" />
             </div>
             <div class="field-grid mt-4">
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'متى آخر زيارة لطبيب الأسنان؟', en: 'Last dental visit?' }" /></label>
-                    <input type="text" v-model="dentalQuestions.lastVisit" class="admin-input" />
+                    <input type="text" v-model="dentalQuestions.lastVisit" class="admin-input" :readonly="readOnly" />
                 </div>
                 <div class="field">
                     <label><LocalizedText :value="{ ar: 'كم مرة تستعمل الفرشة والمعجون باليوم؟', en: 'Brushing frequency per day?' }" /></label>
-                    <input type="text" v-model="dentalQuestions.brushingFrequency" class="admin-input" />
+                    <input type="text" v-model="dentalQuestions.brushingFrequency" class="admin-input" :readonly="readOnly" />
                 </div>
             </div>
             <div class="checklist-grid mt-4">
                 <label class="check-item">
-                    <input type="checkbox" v-model="dentalQuestions.gumProblems" />
+                    <input type="checkbox" v-model="dentalQuestions.gumProblems" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل تعاني من أمراض اللثة؟', en: 'Gum problems?' }" /></span>
                 </label>
                 <label class="check-item">
-                    <input type="checkbox" v-model="dentalQuestions.wantFullTreatment" />
+                    <input type="checkbox" v-model="dentalQuestions.wantFullTreatment" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل ترغب في علاج كامل لأسنانك؟', en: 'Want full treatment?' }" /></span>
                 </label>
                 <label class="check-item">
-                    <input type="checkbox" v-model="dentalQuestions.painNow" />
+                    <input type="checkbox" v-model="dentalQuestions.painNow" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل تشعر بألم الآن في الأسنان؟', en: 'Feeling pain now?' }" /></span>
                 </label>
                 <label class="check-item">
-                    <input type="checkbox" v-model="dentalQuestions.continueUntilEnd" />
+                    <input type="checkbox" v-model="dentalQuestions.continueUntilEnd" :disabled="readOnly" />
                     <span><LocalizedText :value="{ ar: 'هل تستمر معنا حتى نهاية العلاج؟', en: 'Continue until treatment end?' }" /></span>
                 </label>
             </div>
@@ -255,12 +256,12 @@ const DISEASE_OPTIONS = [
                 <SignaturePad 
                     v-model="patientSignature" 
                     :label="{ ar: 'توقيع المريض', en: 'Patient Signature' }" 
-                     
+                    :disabled="readOnly"
                 />
                 <SignaturePad 
                     v-model="doctorSignature" 
                     :label="{ ar: 'توقيع الطبيب', en: 'Doctor Signature' }" 
-                    
+                    :disabled="readOnly"
                 />
             </div>
         </FormSection>

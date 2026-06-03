@@ -16,6 +16,7 @@ const props = defineProps<{
     titleEn: string;
     fields: FormField[];
     initialData?: any;
+    readOnly?: boolean;
 }>();
 
 // Standard patient & doctor selectors
@@ -152,6 +153,18 @@ function getWidthClass(field: FormField) {
     if (w === 'third') return 'col-span-4';
     return 'col-span-12';
 }
+
+function getSelectedOptionLabel(field: FormField) {
+    if (!field.key || formValues.value[field.key] === undefined || formValues.value[field.key] === null || formValues.value[field.key] === '') {
+        return '—';
+    }
+    const val = formValues.value[field.key];
+    const opt = field.options?.find(o => String(o.value) === String(val));
+    if (opt) {
+        return isArabic.value ? opt.label_ar : opt.label_en;
+    }
+    return val;
+}
 </script>
 
 <template>
@@ -159,8 +172,8 @@ function getWidthClass(field: FormField) {
         <!-- Section 1: Patient Information (Required on all forms) -->
         <FormSection number="١" :title="{ ar: 'بيانات المريض والمعالج', en: 'Patient & Doctor Information' }">
             <div class="case-info-grid">
-                <PatientSelector v-model="selectedPatient" />
-                <DoctorSelector v-model="selectedDoctor" />
+                <PatientSelector v-model="selectedPatient" :read-only="readOnly" />
+                <DoctorSelector v-model="selectedDoctor" :read-only="readOnly" />
             </div>
         </FormSection>
 
@@ -194,6 +207,7 @@ function getWidthClass(field: FormField) {
                             :type="field.type"
                             :placeholder="isArabic ? field.placeholder_ar || '' : field.placeholder_en || ''"
                             :required="field.is_required"
+                            :readonly="readOnly"
                             class="renderer-input"
                         />
                     </div>
@@ -210,6 +224,7 @@ function getWidthClass(field: FormField) {
                             :placeholder="isArabic ? field.placeholder_ar || '' : field.placeholder_en || ''"
                             :rows="field.settings?.rows || 3"
                             :required="field.is_required"
+                            :readonly="readOnly"
                             class="renderer-textarea"
                         ></textarea>
                     </div>
@@ -220,8 +235,14 @@ function getWidthClass(field: FormField) {
                             {{ isArabic ? field.label_ar : field.label_en }}
                             <span v-if="field.is_required" class="required-star">*</span>
                         </label>
+                        <div 
+                            v-if="readOnly" 
+                            class="renderer-readonly-value"
+                        >
+                            {{ getSelectedOptionLabel(field) }}
+                        </div>
                         <select 
-                            v-if="field.key"
+                            v-else-if="field.key"
                             v-model="formValues[field.key]"
                             :required="field.is_required"
                             class="renderer-select"
@@ -256,6 +277,7 @@ function getWidthClass(field: FormField) {
                                     :name="field.key" 
                                     :value="opt.value" 
                                     v-model="formValues[field.key]" 
+                                    :disabled="readOnly"
                                 />
                                 <span>{{ isArabic ? opt.label_ar : opt.label_en }}</span>
                             </label>
@@ -269,6 +291,7 @@ function getWidthClass(field: FormField) {
                                 v-if="field.key"
                                 type="checkbox" 
                                 v-model="formValues[field.key]" 
+                                :disabled="readOnly"
                             />
                             <span class="checkbox-text">
                                 {{ isArabic ? field.label_ar : field.label_en }}
@@ -283,12 +306,53 @@ function getWidthClass(field: FormField) {
                         <p class="consent-block-text">{{ isArabic ? field.content_ar : field.content_en }}</p>
                     </div>
 
+                    <!-- Note block -->
+                    <div v-else-if="field.type === 'note'" class="info-banner" style="margin-bottom: 14px; width: 100%;">
+                        <strong v-if="field.label_ar || field.label_en">{{ isArabic ? field.label_ar : field.label_en }}</strong>
+                        <span>{{ isArabic ? field.content_ar : field.content_en }}</span>
+                    </div>
+
+                    <!-- Instruction / List block -->
+                    <div v-else-if="field.type === 'instruction'" class="renderer-instruction-block" style="margin-bottom: 14px; width: 100%;">
+                        <h4 v-if="field.label_ar || field.label_en" class="instruction-header" style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+                            {{ isArabic ? field.label_ar : field.label_en }}
+                        </h4>
+                        <ol v-if="field.settings?.list_type === 'numbered'" class="terms-list">
+                            <li v-for="(opt, idx) in field.options" :key="idx">
+                                {{ isArabic ? opt.label_ar : opt.label_en }}
+                            </li>
+                        </ol>
+                        <ul v-else class="acknowledgment-list">
+                            <li v-for="(opt, idx) in field.options" :key="idx">
+                                {{ isArabic ? opt.label_ar : opt.label_en }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- FAQ block -->
+                    <div v-else-if="field.type === 'faq'" class="renderer-faq-block" style="margin-bottom: 14px; width: 100%;">
+                        <h4 v-if="field.label_ar || field.label_en" class="faq-header">
+                            {{ isArabic ? field.label_ar : field.label_en }}
+                        </h4>
+                        <div class="faq-list">
+                            <div v-for="(opt, idx) in field.options" :key="idx" class="faq-item">
+                                <div class="faq-question">
+                                    {{ isArabic ? opt.label_ar : opt.label_en }}
+                                </div>
+                                <div class="faq-answer">
+                                    {{ isArabic ? opt.content_ar : opt.content_en }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Signature pad -->
                     <div v-else-if="field.type === 'signature'" class="renderer-signature-wrapper">
                         <SignaturePad 
                             v-if="field.key"
                             v-model="signatureValues[field.key]" 
                             :label="{ ar: field.label_ar || 'توقيع', en: field.label_en || 'Signature' }" 
+                            :disabled="readOnly"
                         />
                     </div>
                 </div>
@@ -371,6 +435,18 @@ function getWidthClass(field: FormField) {
 }
 .renderer-textarea {
     resize: vertical;
+}
+.renderer-readonly-value {
+    padding: 9px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-soft);
+    color: var(--ink);
+    font-size: 13.5px;
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
 }
 
 /* Radio Choice styling */
